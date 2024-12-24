@@ -20,7 +20,7 @@ public class LectureService {
         this.lectureHistoryRepository = lectureHistoryRepository;
     }
 
-    public /*synchronized*/ void applyLecture(Long lectureId, Student student) {
+    public synchronized void applyLecture(Long lectureId, Student student) {
         //강의 조회
         Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
