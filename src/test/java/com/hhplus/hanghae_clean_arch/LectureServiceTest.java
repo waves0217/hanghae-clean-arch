@@ -1,22 +1,18 @@
 package com.hhplus.hanghae_clean_arch;
 
-import lecture.domain.Lecture;
-import lecture.domain.LectureHistory;
-import lecture.domain.Student;
-import lecture.repository.LectureHistoryRepository;
-import lecture.repository.LectureRepository;
-import lecture.repository.StudentRepository;
-import lecture.service.LectureService;
-import org.junit.jupiter.api.BeforeEach;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Lecture;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.LectureHistory;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Student;
+import com.hhplus.hanghae_clean_arch.biz.lecture.repository.LectureHistoryRepository;
+import com.hhplus.hanghae_clean_arch.biz.lecture.repository.LectureRepository;
+import com.hhplus.hanghae_clean_arch.biz.lecture.service.LectureService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;

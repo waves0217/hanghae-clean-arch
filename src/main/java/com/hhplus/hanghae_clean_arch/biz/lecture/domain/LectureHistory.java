@@ -1,4 +1,4 @@
-package lecture.domain;
+package com.hhplus.hanghae_clean_arch.biz.lecture.domain;
 
 import jakarta.persistence.*;
 import lombok.Setter;

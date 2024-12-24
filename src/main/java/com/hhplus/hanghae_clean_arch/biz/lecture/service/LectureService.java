@@ -1,11 +1,11 @@
-package lecture.service;
+package com.hhplus.hanghae_clean_arch.biz.lecture.service;
 
-import lecture.domain.ApplicationStatus;
-import lecture.domain.Lecture;
-import lecture.domain.LectureHistory;
-import lecture.domain.Student;
-import lecture.repository.LectureHistoryRepository;
-import lecture.repository.LectureRepository;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.ApplicationStatus;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Lecture;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.LectureHistory;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Student;
+import com.hhplus.hanghae_clean_arch.biz.lecture.repository.LectureHistoryRepository;
+import com.hhplus.hanghae_clean_arch.biz.lecture.repository.LectureRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

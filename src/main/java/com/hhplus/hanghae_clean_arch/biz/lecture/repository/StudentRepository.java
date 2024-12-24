@@ -1,6 +1,6 @@
-package lecture.repository;
+package com.hhplus.hanghae_clean_arch.biz.lecture.repository;
 
-import lecture.domain.Student;
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
