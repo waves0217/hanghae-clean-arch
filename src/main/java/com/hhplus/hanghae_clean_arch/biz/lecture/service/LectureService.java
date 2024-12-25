@@ -6,7 +6,13 @@ import com.hhplus.hanghae_clean_arch.biz.lecture.domain.LectureHistory;
 import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Student;
 import com.hhplus.hanghae_clean_arch.biz.lecture.repository.LectureHistoryRepository;
 import com.hhplus.hanghae_clean_arch.biz.lecture.repository.LectureRepository;
+import com.hhplus.hanghae_clean_arch.biz.lecture.repository.StudentRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 
@@ -14,22 +20,34 @@ import java.time.LocalDateTime;
 public class LectureService {
     private final LectureRepository lectureRepository;
     private final LectureHistoryRepository lectureHistoryRepository;
+    private final StudentRepository studentRepository;
 
-    public LectureService(LectureRepository lectureRepository, LectureHistoryRepository lectureHistoryRepository) {
+    public LectureService(LectureRepository lectureRepository, LectureHistoryRepository lectureHistoryRepository, StudentRepository studentRepository) {
         this.lectureRepository = lectureRepository;
         this.lectureHistoryRepository = lectureHistoryRepository;
+        this.studentRepository = studentRepository;
     }
 
-    public synchronized void applyLecture(Long lectureId, Student student) {
+    @Retryable(
+            value = CannotAcquireLockException.class,
+            maxAttempts = 3, // 최대 3회 재시도
+            backoff = @Backoff(delay = 200) // 200ms 딜레이
+    )
+    @Transactional
+    public void applyLecture(Long lectureId, Student student) {
         //강의 조회
-        Lecture lecture = lectureRepository.findById(lectureId)
+        //Lecture lecture = lectureRepository.findById(lectureId)
+        Lecture lecture = lectureRepository.findByIdWithLock(lectureId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 강의를 찾을 수 없습니다."));
 
+        if (student.getId() == null) {
+            student = studentRepository.save(student);
+        }
         //중복 신청 확인
         if (lectureHistoryRepository.existsByLectureAndStudent(lecture, student)) {
             throw new IllegalStateException("이미 신청된 강의입니다.");
         }
-        
+
         //정원 초과 확인
         if (lecture.getCurrentEnrollment() >= lecture.getCapacity()) {
             throw new IllegalStateException("강의 정원이 초과되었습니다.");

@@ -1,9 +1,7 @@
 package com.hhplus.hanghae_clean_arch.biz.lecture.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Lecture {
 
     @Id
@@ -26,4 +24,14 @@ public class Lecture {
     private int currentEnrollment;
     private LocalDateTime date;
 
+    public Lecture(String title, String instructor, int capacity, LocalDateTime date) {
+        this.title = title;
+        this.instructor = instructor;
+        this.capacity = capacity;
+        this.currentEnrollment = 0; // 초기값 설정
+        this.date = date;
+    }
+
+    @Version
+    private int version;
 }

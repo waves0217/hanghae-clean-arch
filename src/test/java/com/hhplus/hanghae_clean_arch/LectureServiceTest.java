@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -39,11 +40,8 @@ class LectureServiceTest {
     @DisplayName("학생이 특강을 정상적으로 신청할 수 있다")
     void applyLecture_Success() {
         //given
-        Lecture lecture = new Lecture();
+        Lecture lecture = new Lecture("특강1", "강사1", 30, LocalDateTime.now());
         lecture.setId(1L);
-        lecture.setTitle("tdd 특강");
-        lecture.setInstructor("강사 A");
-        lecture.setCapacity(30);
         lecture.setCurrentEnrollment(5);
 
         Student student = new Student();
@@ -65,10 +63,8 @@ class LectureServiceTest {
     @DisplayName("동일한 학생은 동일한 강의를 중복 신청할 수 없다")
     void applyLecture_DuplicateApplication() {
         //given
-        Lecture lecture = new Lecture();
+        Lecture lecture = new Lecture("특강1", "강사1", 30, LocalDateTime.now());
         lecture.setId(1L);
-        lecture.setTitle("Spring Boot 특강");
-        lecture.setCapacity(10);
         lecture.setCurrentEnrollment(5);
 
         Student student = new Student();
@@ -95,11 +91,8 @@ class LectureServiceTest {
     @DisplayName("신청 인원이 초과되면 특강 신청이 불가능하다")
     void applyLecture_OverCapacity() {
         //given
-        Lecture lecture = new Lecture();
+        Lecture lecture = new Lecture("특강1", "강사1", 30, LocalDateTime.now());
         lecture.setId(1L);
-        lecture.setTitle("tdd 특강");
-        lecture.setInstructor("강사 A");
-        lecture.setCapacity(30);
         lecture.setCurrentEnrollment(30);
 
         Student student = new Student();
@@ -118,10 +111,8 @@ class LectureServiceTest {
     @DisplayName("여러 사용자가 동시에 신청 시 동시성 문제 확인")
     void applyLecture_ConcurrencyIssue() throws InterruptedException {
         //given
-        Lecture lecture = new Lecture();
+        Lecture lecture = new Lecture("특강1", "강사1", 30, LocalDateTime.now());
         lecture.setId(1L);
-        lecture.setTitle("선착순 특강");
-        lecture.setCapacity(30); //최대 정원
         lecture.setCurrentEnrollment(22); //현재 인원
 
         when(lectureRepository.findById(1L)).thenReturn(Optional.of(lecture));

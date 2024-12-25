@@ -1,12 +1,14 @@
 package com.hhplus.hanghae_clean_arch.biz.lecture.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Setter
+@Getter
 public class LectureHistory {
 
     @Id
