@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LectureService {
@@ -65,4 +67,18 @@ public class LectureService {
         lecture.setCurrentEnrollment(lecture.getCurrentEnrollment() + 1);
         lectureRepository.save(lecture);
     }
+
+
+    // 특강 신청 완료 목록 조회
+    public List<Lecture> getCompletedLecturesByUserId(Long userId) {
+        // 특정 유저가 신청한 완료된 특강 목록 조회
+        List<LectureHistory> lectureHistories = lectureHistoryRepository.findByStudentIdAndStatus(userId, ApplicationStatus.APPLIED);
+
+        // 결과에서 Lecture만 추출하여 반환
+        return lectureHistories.stream()
+                .map(LectureHistory::getLecture) // LectureHistory에서 Lecture 객체만 추출
+                .collect(Collectors.toList());
+    }
+
+
 }

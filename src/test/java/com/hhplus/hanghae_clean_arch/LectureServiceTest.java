@@ -1,5 +1,6 @@
 package com.hhplus.hanghae_clean_arch;
 
+import com.hhplus.hanghae_clean_arch.biz.lecture.domain.ApplicationStatus;
 import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Lecture;
 import com.hhplus.hanghae_clean_arch.biz.lecture.domain.LectureHistory;
 import com.hhplus.hanghae_clean_arch.biz.lecture.domain.Student;
@@ -14,6 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -158,6 +161,41 @@ class LectureServiceTest {
 
         //then
         assertTrue(lecture.getCurrentEnrollment() <= 30, "정원이 초과되지 않아야 합니다.");
+    }
+
+    @Test
+    void testGetCompletedLecturesByUserId() {
+        //given
+        Long userId = 1L;
+
+        Lecture lecture1 = new Lecture("A특강", "김강사", 30, null);
+        Lecture lecture2 = new Lecture("B특강", "이강사", 30, null);
+
+        Student student = new Student();
+        student.setId(userId);
+        student.setName("홍길동");
+
+        LectureHistory history1 = new LectureHistory();
+        history1.setLecture(lecture1);
+        history1.setStudent(student);
+
+        LectureHistory history2 = new LectureHistory();
+        history2.setLecture(lecture2);
+        history2.setStudent(student);
+
+        List<LectureHistory> histories = Arrays.asList(history1, history2);
+
+        when(lectureHistoryRepository.findByStudentIdAndStatus(userId, ApplicationStatus.APPLIED))
+                .thenReturn(histories); // 특정 유저의 완료된 강의 목록을 반환하도록 설정
+
+        //when
+        List<Lecture> completedLectures = lectureService.getCompletedLecturesByUserId(userId);
+
+        //then
+        assertNotNull(completedLectures);
+        assertEquals(2, completedLectures.size()); // 반환된 특강 목록의 크기 확인
+        assertEquals("A특강", completedLectures.get(0).getTitle()); // 첫 번째 특강 제목 확인
+        assertEquals("김강사", completedLectures.get(0).getInstructor()); // 첫 번째 강연자 확인
     }
 
 }
