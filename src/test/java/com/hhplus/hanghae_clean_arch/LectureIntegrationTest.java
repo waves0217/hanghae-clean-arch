@@ -57,12 +57,15 @@ class LectureIntegrationTest {
         assertEquals(1, updatedLecture.getCurrentEnrollment()); // 현재 신청 인원이 1인지 확인
     }
 
+    /**
+     * 선착순 30명 이후의 신청자의 경우 실패하도록 개선
+     */
     @Test
     @DisplayName("특강 신청 실패 - 정원 초과")
     void applyLecture_Failure_CapacityExceeded() {
         // given
-        Lecture lecture = new Lecture("특강2", "김강사", 2, LocalDateTime.now()); // 최대 정원 2명
-        lecture.setCurrentEnrollment(2); // 이미 정원이 찬 상태
+        Lecture lecture = new Lecture("특강2", "김강사", 30, LocalDateTime.now());
+        lecture.setCurrentEnrollment(30); // 이미 정원이 찬 상태
         lectureRepository.save(lecture);
 
         Student student = new Student();
@@ -76,6 +79,9 @@ class LectureIntegrationTest {
         assertEquals("강의 정원이 초과되었습니다.", exception.getMessage());
     }
 
+    /**
+     * 같은 사용자가 동일한 특강에 대해 신청 성공하지 못하도록 개선
+     */
     @Test
     @DisplayName("특강 신청 실패 - 중복 신청")
     void applyLecture_Failure_DuplicateApplication() {
@@ -97,16 +103,18 @@ class LectureIntegrationTest {
         assertEquals("이미 신청된 강의입니다.", exception.getMessage());
     }
 
+    /**
+     * 동시에 동일한 특강에 대해 40명이 신청했을 때, 30명만 성공하는 것을 검증
+     */
     @Test
     @DisplayName("동시성 테스트 - 정원이 초과되지 않는지 확인")
     void applyLecture_Concurrency() throws InterruptedException {
         // given
         Lecture lecture = new Lecture("Spring Boot 특강", "김강사", 30, LocalDateTime.now());
         lecture.setCurrentEnrollment(25); // 현재 정원 25명
-        lectureRepository.save(lecture);
         lectureRepository.saveAndFlush(lecture);
 
-        int threadCount = 7; // 동시 신청 스레드 수
+        int threadCount = 40; // 동시 신청 스레드 수
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
@@ -137,7 +145,7 @@ class LectureIntegrationTest {
         Lecture updatedLecture = lectureRepository.findById(lecture.getId()).orElseThrow();
         assertEquals(30, updatedLecture.getCurrentEnrollment()); // 최종 정원 확인
         assertEquals(5, successCount.get()); // 성공한 신청자 수
-        assertEquals(2, failureCount.get()); // 실패한 신청자 수
+        assertEquals(35, failureCount.get()); // 실패한 신청자 수
     }
 
     @Test
@@ -179,5 +187,46 @@ class LectureIntegrationTest {
         assertTrue(completedLectures.stream().anyMatch(lecture -> "B특강".equals(lecture.getTitle())));
     }
 
+    /**
+     * 동일한 유저 정보로 같은 특강을 5번 신청했을 때, 1번만 성공하는 것을 검증하는 통합 테스트 작성
+     */
+    @Test
+    @DisplayName("동일한 유저가 같은 특강을 여러 번 신청했을 때, 1번만 성공하고 나머지는 실패해야 한다.")
+    void applyLecture_OneSuccessMultipleFailure() throws InterruptedException {
+        // given
+        Lecture lecture = new Lecture("Spring Boot 특강", "김강사", 30, LocalDateTime.now());
+        lectureRepository.save(lecture);
+
+        Student student = new Student();
+        student.setName("홍길동");
+
+        int threadCount = 5; // 동일 유저가 5번 신청 시도
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        AtomicInteger successCount = new AtomicInteger();
+        AtomicInteger failureCount = new AtomicInteger();
+
+        // when
+        for (int i = 0; i < threadCount; i++) {
+            executorService.execute(() -> {
+                try {
+                    lectureService.applyLecture(lecture.getId(), student); // 신청 시도
+                    successCount.incrementAndGet(); // 성공 카운트
+                } catch (IllegalStateException e) {
+                    failureCount.incrementAndGet(); // 실패 카운트 (중복 신청)
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await(); // 모든 스레드가 종료될 때까지 기다림
+        executorService.shutdown(); // 스레드 풀 종료
+
+        // then
+        assertEquals(1, successCount.get()); // 1번만 성공해야 함
+        assertEquals(4, failureCount.get()); // 나머지는 실패해야 함
+    }
 }
 
